@@ -4,6 +4,7 @@ import (
 	"errors"
 	"invoice-payment-system/domain"
 	model2 "invoice-payment-system/model"
+	"time"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -66,6 +67,12 @@ func (r *InvoiceWriteRepo) Save(invoice *domain.Invoice) error {
 	return r.DB.
 		Model(&model2.Invoices{}).
 		Where("id = ?", invoice.ID).
-		Update("status", string(invoice.Status)).
-		Error
+		Updates(map[string]interface{}{
+			"status":         invoice.Status,
+			"approver":       invoice.ApproverBy,
+			"paid_at":        invoice.PaidAt,
+			"payment_ref":    invoice.PaymentRef,
+			"payment_method": invoice.PaymentMethod,
+			"updated_at":     time.Now(),
+		}).Error
 }
