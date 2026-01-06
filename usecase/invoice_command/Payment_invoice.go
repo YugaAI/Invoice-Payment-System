@@ -1,8 +1,6 @@
 package invoice_command
 
 import (
-	"errors"
-	"invoice-payment-system/domain"
 	"time"
 
 	"gorm.io/gorm"
@@ -21,19 +19,19 @@ func (h *PayInvoiceUsecase) Execute(cmd PayInvoiceCommand) error {
 	return h.DB.Transaction(func(tx *gorm.DB) error {
 		repo := h.Repo
 		if txRepo, ok := h.Repo.(interface {
-			withTx(*gorm.DB) InvoiceWriteRepoInterface
+			WithTx(*gorm.DB) InvoiceWriteRepoInterface
 		}); ok {
-			repo = txRepo.withTx(tx)
+			repo = txRepo.WithTx(tx)
 		}
 		invoice, err := repo.FindByID(cmd.InvoiceID)
 		if err != nil {
 			return err
 		}
-		if invoice.Status != domain.Approved {
-			return errors.New("only approved invoices can be paid")
-		}
-		invoice.Pay(cmd.PaidAt, cmd.Method, cmd.RefNo)
 
-		return repo.Save(invoice)
+		if err := invoice.Pay(cmd.PaidAt, cmd.Method, cmd.RefNo); err != nil {
+			return err
+		}
+
+		return repo.SavePayment(invoice)
 	})
 }

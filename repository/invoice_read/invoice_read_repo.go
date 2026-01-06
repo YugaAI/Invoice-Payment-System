@@ -65,7 +65,7 @@ func (r *InvoiceReadRepo) List(companyID uint64, status *string, limit, offset i
 		return nil, 0, err
 	}
 
-	errData := q.Select(`id, invoice_id, total, status, created_at`).
+	errData := q.Select(`id, total, status, created_at`).
 		Order("created_at desc").
 		Limit(limit).
 		Offset(offset).Scan(&items).Error

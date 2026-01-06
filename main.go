@@ -4,7 +4,6 @@ import (
 	"invoice-payment-system/config"
 	"invoice-payment-system/handler/company"
 	"invoice-payment-system/handler/invoice"
-	model2 "invoice-payment-system/model"
 	"invoice-payment-system/repository/company_read"
 	"invoice-payment-system/repository/company_write"
 	"invoice-payment-system/repository/invoice_read"
@@ -13,66 +12,33 @@ import (
 	"invoice-payment-system/usecase/company_query"
 	"invoice-payment-system/usecase/invoice_command"
 	"invoice-payment-system/usecase/invoice_query"
-	"log"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
-func initDB() *gorm.DB {
-	config.LoadEnv()
-
-	dsn := config.BuildDSN()
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal("failed to connect database:", err)
-	}
-
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Fatal("failed to get sql.DB:", err)
-	}
-
-	sqlDB.SetMaxIdleConns(5)
-	sqlDB.SetMaxOpenConns(20)
-	sqlDB.SetConnMaxLifetime(time.Hour)
-
-	if err := db.AutoMigrate(
-		&model2.Invoices{},
-		&model2.Company{},
-		&model2.Item{},
-	); err != nil {
-		log.Fatal("failed to auto migrate:", err)
-	}
-
-	log.Println("database connected & migrated")
-	return db
-}
-
 func main() {
-	db := initDB()
-	invoiceReadRepo := invoice_read.NewInvoiceReadRepo(db)
-	invoiceWriteRepo := invoice_write.NewInvoiceWriteRepo(db)
+	writeDB := config.InitWriteDB()
+	readDB := config.InitReadDB()
+	invoiceReadRepo := invoice_read.NewInvoiceReadRepo(readDB)
+	invoiceWriteRepo := invoice_write.NewInvoiceWriteRepo(writeDB)
 
 	createInvoiceCmd := &invoice_command.CreateInvoiceUsecase{
-		DB:   db,
+		DB:   writeDB,
 		Repo: invoiceWriteRepo,
 	}
 
 	submitInvoiceCmd := &invoice_command.SubmiteInvoiceUsecase{
-		DB:   db,
+		DB:   writeDB,
 		Repo: invoiceWriteRepo,
 	}
 
 	approveInvoiceCmd := &invoice_command.ApproveInvoiceUsecase{
-		DB:   db,
+		DB:   writeDB,
 		Repo: invoiceWriteRepo,
 	}
 
 	payInvoiceCmd := &invoice_command.PayInvoiceUsecase{
-		DB:   db,
+		DB:   writeDB,
 		Repo: invoiceWriteRepo,
 	}
 
@@ -98,8 +64,8 @@ func main() {
 		DashboardQuery: invoiceDashboardQuery,
 	}
 
-	companyWriteRepo := company_write.NewCompanyWriteRepo(db)
-	companyReadRepo := company_read.NewCompanyReadRepo(db)
+	companyWriteRepo := company_write.NewCompanyWriteRepo(writeDB)
+	companyReadRepo := company_read.NewCompanyReadRepo(readDB)
 
 	companyWrite := &company_command.CreateCompanyUsecase{
 		Repo: companyWriteRepo,

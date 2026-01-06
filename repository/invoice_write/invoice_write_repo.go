@@ -33,18 +33,19 @@ func (i *InvoiceWriteRepo) Create(invoice *domain.Invoice) error {
 	}
 
 	model := model2.Invoices{
-		ID:            invoice.ID,
-		CompanyID:     invoice.CompanyID,
-		Total:         invoice.Total,
-		Status:        string(invoice.Status),
-		Items:         items,
-		Approver:      invoice.ApproverBy,
-		PaidAt:        invoice.PaidAt,
-		PaymentMethod: invoice.PaymentMethod,
-		PaymentRef:    invoice.PaymentRef,
+		ID:        invoice.ID,
+		CompanyID: invoice.CompanyID,
+		Total:     invoice.Total,
+		Status:    string(invoice.Status),
+		Items:     items,
 	}
 
-	return i.DB.Create(&model).Error
+	if err := i.DB.Create(&model).Error; err != nil {
+		return err
+	}
+
+	invoice.ID = model.ID
+	return nil
 }
 
 func (i *InvoiceWriteRepo) FindByID(id uint64) (*domain.Invoice, error) {
@@ -63,7 +64,28 @@ func (i *InvoiceWriteRepo) FindByID(id uint64) (*domain.Invoice, error) {
 	}, nil
 }
 
-func (r *InvoiceWriteRepo) Save(invoice *domain.Invoice) error {
+func (r *InvoiceWriteRepo) SaveSubmit(invoice *domain.Invoice) error {
+	return r.DB.
+		Model(&model2.Invoices{}).
+		Where("id = ?", invoice.ID).
+		Updates(map[string]interface{}{
+			"status":     invoice.Status,
+			"updated_at": time.Now(),
+		}).Error
+}
+
+func (r *InvoiceWriteRepo) SaveApprove(invoice *domain.Invoice) error {
+	return r.DB.
+		Model(&model2.Invoices{}).
+		Where("id = ?", invoice.ID).
+		Updates(map[string]interface{}{
+			"status":     invoice.Status,
+			"approver":   invoice.ApproverBy,
+			"updated_at": time.Now(),
+		}).Error
+}
+
+func (r *InvoiceWriteRepo) SavePayment(invoice *domain.Invoice) error {
 	return r.DB.
 		Model(&model2.Invoices{}).
 		Where("id = ?", invoice.ID).

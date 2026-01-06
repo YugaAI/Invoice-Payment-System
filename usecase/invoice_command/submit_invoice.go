@@ -1,9 +1,6 @@
 package invoice_command
 
 import (
-	"errors"
-	"invoice-payment-system/domain"
-
 	"gorm.io/gorm"
 )
 
@@ -16,9 +13,9 @@ func (h *SubmiteInvoiceUsecase) Execute(cmd SubmitInvoiceCommand) error {
 	return h.DB.Transaction(func(tx *gorm.DB) error {
 		repo := h.Repo
 		if txRepo, ok := h.Repo.(interface {
-			withTx(db *gorm.DB) InvoiceWriteRepoInterface
+			WithTx(db *gorm.DB) InvoiceWriteRepoInterface
 		}); ok {
-			repo = txRepo.withTx(tx)
+			repo = txRepo.WithTx(tx)
 		}
 
 		invoice, err := repo.FindByID(cmd.InvoiceID)
@@ -26,13 +23,9 @@ func (h *SubmiteInvoiceUsecase) Execute(cmd SubmitInvoiceCommand) error {
 			return err
 		}
 
-		if invoice.Status != domain.Draft {
-			return errors.New("only draft invoice can be submitted")
-		}
-
 		if err := invoice.Submit(); err != nil {
 			return err
 		}
-		return repo.Save(invoice)
+		return repo.SaveSubmit(invoice)
 	})
 }

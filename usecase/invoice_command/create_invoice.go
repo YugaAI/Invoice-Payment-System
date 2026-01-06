@@ -1,7 +1,6 @@
 package invoice_command
 
 import (
-	"errors"
 	"invoice-payment-system/domain"
 
 	"gorm.io/gorm"
@@ -12,42 +11,28 @@ type CreateInvoiceUsecase struct {
 	Repo InvoiceWriteRepoInterface
 }
 
-func (h *CreateInvoiceUsecase) Execute(cmd CreateInvoiceCommand) (uint64, error) {
-	if len(cmd.Items) == 0 {
-		return 0, errors.New("invoice must have at least one item")
-	}
-
-	var total int64
-	for _, item := range cmd.Items {
-		if item.Qty <= 0 || item.Price <= 0 {
-			return 0, errors.New("invalid quantity or price")
-		}
-		total += item.Qty * item.Price
-
-	}
-
-	invoice := &domain.Invoice{
-		CompanyID: cmd.CompanyID,
-		Total:     total,
-		Status:    domain.Draft,
-		Items:     make([]domain.InvoiceItem, 0, len(cmd.Items)),
-	}
-	for _, item := range cmd.Items {
-		invoice.Items = append(invoice.Items, domain.InvoiceItem{
-			Name:  item.Name,
-			Qty:   item.Qty,
-			Price: item.Price,
+func (u *CreateInvoiceUsecase) Execute(cmd CreateInvoiceCommand) (uint64, error) {
+	items := make([]domain.InvoiceItem, 0, len(cmd.Items))
+	for _, it := range cmd.Items {
+		items = append(items, domain.InvoiceItem{
+			Name:  it.Name,
+			Qty:   it.Qty,
+			Price: it.Price,
 		})
 	}
 
-	err := h.DB.Transaction(func(tx *gorm.DB) error {
-		repo := h.Repo
-		if txRepo, ok := h.Repo.(interface {
-			withTX(*gorm.DB) InvoiceWriteRepoInterface
-		}); ok {
-			repo = txRepo.withTX(tx)
-		}
+	invoice, err := domain.NewInvoice(cmd.CompanyID, items)
+	if err != nil {
+		return 0, err
+	}
 
+	err = u.DB.Transaction(func(tx *gorm.DB) error {
+		repo := u.Repo
+		if txRepo, ok := repo.(interface {
+			WithTX(*gorm.DB) InvoiceWriteRepoInterface
+		}); ok {
+			repo = txRepo.WithTX(tx)
+		}
 		return repo.Create(invoice)
 	})
 

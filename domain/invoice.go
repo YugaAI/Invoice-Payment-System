@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+var (
+	ErrInvoiceEmptyItem    = errors.New("invoice must have at least one item")
+	ErrInvalidInvoiceItem  = errors.New("invalid invoice item")
+	ErrInvoiceNotDraft     = errors.New("only draft invoice can be submitted")
+	ErrInvoiceNotSubmitted = errors.New("only submitted invoice can be approved")
+	ErrInvalidApprover     = errors.New("approver is required")
+	ErrInvoiceNotApproved  = errors.New("only approved invoice can be paid")
+	ErrInvoiceAlreadyPaid  = errors.New("invoice already paid")
+	ErrInvalidPayment      = errors.New("invalid payment data")
+)
+
 type InvoiceStatus string
 
 const (
@@ -35,7 +46,7 @@ type InvoiceItem struct {
 
 func (i *Invoice) Submit() error {
 	if i.Status != Draft {
-		return errors.New("only draft can be submitted")
+		return ErrInvoiceNotDraft
 	}
 	i.Status = Submitted
 	return nil
@@ -43,19 +54,50 @@ func (i *Invoice) Submit() error {
 
 func (i *Invoice) Approve(approver string) error {
 	if i.Status != Submitted {
-		return errors.New("only approved can be approved")
+		return ErrInvoiceNotSubmitted
+	}
+	if approver == "" {
+		return ErrInvalidApprover
 	}
 	i.Status = Approved
 	i.ApproverBy = approver
 	return nil
 }
 func (i *Invoice) Pay(paidAt time.Time, method, ref string) error {
-	if i.Status != Approved {
-		return errors.New("only payed can be approved")
+	if i.Status == Paid {
+		return ErrInvoiceAlreadyPaid
 	}
+	if i.Status != Approved {
+		return ErrInvoiceNotApproved
+	}
+	if paidAt.IsZero() || method == "" || ref == "" {
+		return ErrInvalidPayment
+	}
+
 	i.Status = Paid
 	i.PaidAt = paidAt
 	i.PaymentMethod = method
 	i.PaymentRef = ref
 	return nil
+}
+
+func NewInvoice(companyID uint64, items []InvoiceItem) (*Invoice, error) {
+	if len(items) == 0 {
+		return nil, ErrInvoiceEmptyItem
+	}
+
+	var total int64
+	for _, it := range items {
+		if it.Qty <= 0 || it.Price <= 0 {
+			return nil, ErrInvalidInvoiceItem
+		}
+		total += it.Qty * it.Price
+	}
+
+	return &Invoice{
+		CompanyID: companyID,
+		Status:    Draft,
+		Total:     total,
+		Items:     items,
+	}, nil
 }
