@@ -19,12 +19,12 @@ func LoadEnv() {
 }
 
 func BuildDSN(prefix string) string {
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	user := os.Getenv("DB_USER")
-	pass := os.Getenv("DB_PASSWORD")
-	name := os.Getenv("DB_NAME")
-	ssl := os.Getenv("DB_SSLMODE")
+	host := os.Getenv(prefix + "_HOST")
+	port := os.Getenv(prefix + "_PORT")
+	user := os.Getenv(prefix + "_USER")
+	pass := os.Getenv(prefix + "_PASSWORD")
+	name := os.Getenv(prefix + "_NAME")
+	ssl := os.Getenv(prefix + "_SSLMODE")
 
 	if host == "" || port == "" || user == "" || name == "" || pass == "" || ssl == "" {
 		log.Fatal("database env is not complete")
