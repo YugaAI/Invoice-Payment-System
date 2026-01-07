@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"invoice-payment-system/config"
 	"invoice-payment-system/handler/company"
 	"invoice-payment-system/handler/invoice"
+	"invoice-payment-system/redis_client"
 	"invoice-payment-system/repository/company_read"
 	"invoice-payment-system/repository/company_write"
 	"invoice-payment-system/repository/invoice_read"
@@ -19,7 +21,10 @@ import (
 func main() {
 	writeDB := config.InitWriteDB()
 	readDB := config.InitReadDB()
-	invoiceReadRepo := invoice_read.NewInvoiceReadRepo(readDB)
+	redisCfg := config.LoadRedisConfig()
+	redisClient := redis_client.NewRedisClient(*redisCfg)
+	ctx := context.Background()
+	invoiceReadRepo := invoice_read.NewInvoiceReadRepo(readDB, redisClient, ctx)
 	invoiceWriteRepo := invoice_write.NewInvoiceWriteRepo(writeDB)
 
 	createInvoiceCmd := &invoice_command.CreateInvoiceUsecase{

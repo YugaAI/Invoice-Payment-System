@@ -12,6 +12,12 @@ type InvoiceDetail struct {
 	Total int64         `json:"total"`
 	Items []InvoiceItem `gorm:"-",json:"items"`
 
+	Approver *string `json:"approver"`
+
+	PaidAt        *time.Time `json:"paid_at,omitempty"`
+	PaymentMethod *string    `json:"payment_method,omitempty"`
+	PaymentRef    *string    `json:"payment_ref,omitempty"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -23,15 +29,17 @@ type InvoiceItem struct {
 	SubTotal int64  `json:"sub_total"`
 }
 
+type InvoiceList struct {
+	ID          uint64 `json:"id"`
+	CompanyName string `json:"company_name"`
+	Total       int64  `json:"total"`
+	Status      string `json:"status"`
+}
 type InvoiceDashboard struct {
-	CompanyID uint64 `json:"company_id"`
-
-	TotalDraft    int64 `json:"total_draft"`
-	TotalSubmited int64 `json:"total_submited"`
-	TotalApproved int64 `json:"total_approved"`
-	TotalPaid     int64 `json:"total_paid"`
-
-	GrandTotal int64 `json:"grand_total"`
+	TotalInvoice int64 `json:"total_invoice"`
+	PaidCount    int64 `json:"paid_count"`
+	UnpaidCount  int64 `json:"unpaid_count"`
+	TotalAmount  int64 `json:"total_amount"`
 }
 
 type DashboardRow struct {
@@ -39,25 +47,25 @@ type DashboardRow struct {
 	Total  int64
 }
 
-func NewInvoiceDashboard(CommpanyID uint64, rows []DashboardRow) *InvoiceDashboard {
-	d := &InvoiceDashboard{
-		CompanyID: CommpanyID,
-	}
-	for _, row := range rows {
-		switch row.Status {
-		case "draft":
-			d.TotalDraft = row.Total
-		case "submited":
-			d.TotalSubmited = row.Total
-		case "approved":
-			d.TotalApproved = row.Total
-		case "paid":
-			d.TotalPaid = row.Total
-		}
-		d.GrandTotal = row.Total
-	}
-	return d
-}
+//func NewInvoiceDashboard(CommpanyID uint64, rows []DashboardRow) *InvoiceDashboard {
+//	d := &InvoiceDashboard{
+//		CompanyID: CommpanyID,
+//	}
+//	for _, row := range rows {
+//		switch row.Status {
+//		case "draft":
+//			d.TotalDraft = row.Total
+//		case "submited":
+//			d.TotalSubmited = row.Total
+//		case "approved":
+//			d.TotalApproved = row.Total
+//		case "paid":
+//			d.TotalPaid = row.Total
+//		}
+//		d.GrandTotal = row.Total
+//	}
+//	return d
+//}
 
 type InvoiceListItem struct {
 	ID        uint64    `json:"id"`

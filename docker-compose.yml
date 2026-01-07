@@ -15,9 +15,21 @@ services:
     networks:
       - invoice-net
 
+  redis:
+    image: redis:7
+    container_name: invoice-redis_client
+    ports:
+      - "6379:6379"
+    command: [ "redis_client-server", "--appendonly", "yes" ]
+    volumes:
+      - redisdata:/data
+    networks:
+      - invoice-net
+
 networks:
   invoice-net:
     driver: bridge
 
 volumes:
   pgdata:
+  redisdata:
