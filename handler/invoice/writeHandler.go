@@ -2,16 +2,16 @@ package invoice
 
 import (
 	"fmt"
-	"invoice-payment-system/handler/helper"
-	"invoice-payment-system/usecase/invoice_command"
+	"invoice-payment-system/helper"
+	"invoice-payment-system/usecase/invoiceUsecase/invoice_write_usecase"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createInvoiceReq struct {
-	CompanyID uint64                              `json:"company_id" binding:"required"`
-	Items     []invoice_command.CreateInvoiceItem `json:"items" binding:"required"`
+	CompanyID uint64                                    `json:"company_id" binding:"required"`
+	Items     []invoice_write_usecase.CreateInvoiceItem `json:"items" binding:"required"`
 }
 
 func (h *InvoiceHandler) Create(c *gin.Context) {
@@ -22,7 +22,7 @@ func (h *InvoiceHandler) Create(c *gin.Context) {
 		return
 	}
 
-	id, err := h.CreateCmd.Execute(invoice_command.CreateInvoiceCommand{
+	id, err := h.UsecaseWrite.CreateExecute(invoice_write_usecase.CreateInvoiceCommand{
 		CompanyID: req.CompanyID,
 		Items:     req.Items,
 	})
@@ -37,7 +37,7 @@ func (h *InvoiceHandler) Create(c *gin.Context) {
 func (h *InvoiceHandler) Submit(c *gin.Context) {
 	id := helper.ParseID(c)
 
-	err := h.SubmitCmd.Execute(invoice_command.SubmitInvoiceCommand{
+	err := h.UsecaseWrite.SubmitExecute(invoice_write_usecase.SubmitInvoiceCommand{
 		InvoiceID: id,
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func (h *InvoiceHandler) Approve(c *gin.Context) {
 	var req approveReq
 	_ = c.ShouldBindJSON(&req)
 
-	err := h.ApproveCmd.Execute(invoice_command.ApproveInvoiceCommand{
+	err := h.UsecaseWrite.ApproveExecute(invoice_write_usecase.ApproveInvoiceCommand{
 		InvoiceID: id,
 		Approver:  req.Approver,
 	})
@@ -84,7 +84,7 @@ func (h *InvoiceHandler) Pay(c *gin.Context) {
 		return
 	}
 
-	err := h.PayCmd.Execute(invoice_command.PayInvoiceCommand{
+	err := h.UsecaseWrite.PaymentExecute(invoice_write_usecase.PayInvoiceCommand{
 		InvoiceID: id,
 		Method:    req.Method,
 		RefNo:     req.RefNo,

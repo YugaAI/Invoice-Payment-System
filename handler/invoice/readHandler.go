@@ -1,7 +1,7 @@
 package invoice
 
 import (
-	"invoice-payment-system/usecase/invoice_query"
+	"invoice-payment-system/usecase/invoiceUsecase/invoice_read_usecase"
 	"net/http"
 	"strconv"
 
@@ -12,11 +12,11 @@ func (h *InvoiceHandler) Detail(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid invoice id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid invoiceRepo id"})
 		return
 	}
 
-	result, err := h.DetailQuery.Execute(invoice_query.GetInvoiceDetailQuery{
+	result, err := h.UsecaseRead.GetInvoiceByIdExecute(invoice_read_usecase.GetInvoiceDetailQuery{
 		InvoiceID: id,
 	})
 	if err != nil {
@@ -36,14 +36,14 @@ func (h *InvoiceHandler) List(c *gin.Context) {
 
 	companyID, err := strconv.ParseUint(companyParam, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid company id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid companyUsecase id"})
 		return
 	}
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	result, err := h.ListQuery.Execute(companyID, page, limit)
+	result, err := h.UsecaseRead.GetListInvoiceExecute(companyID, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -65,11 +65,11 @@ func (h *InvoiceHandler) Dashboard(c *gin.Context) {
 
 	companyID, err := strconv.ParseUint(companyParam, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid company id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid companyUsecase id"})
 		return
 	}
 
-	result, err := h.DashboardQuery.Execute(invoice_query.InvoiceDashboardQuery{
+	result, err := h.UsecaseRead.InvoiceDasboardExecute(invoice_read_usecase.InvoiceDashboardQuery{
 		CompanyID: companyID,
 	})
 	if err != nil {

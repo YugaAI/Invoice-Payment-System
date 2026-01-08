@@ -6,13 +6,13 @@ import (
 )
 
 var (
-	ErrInvoiceEmptyItem    = errors.New("invoice must have at least one item")
-	ErrInvalidInvoiceItem  = errors.New("invalid invoice item")
-	ErrInvoiceNotDraft     = errors.New("only draft invoice can be submitted")
-	ErrInvoiceNotSubmitted = errors.New("only submitted invoice can be approved")
+	ErrInvoiceEmptyItem    = errors.New("invoiceRepo must have at least one item")
+	ErrInvalidInvoiceItem  = errors.New("invalid invoiceRepo item")
+	ErrInvoiceNotDraft     = errors.New("only draft invoiceRepo can be submitted")
+	ErrInvoiceNotSubmitted = errors.New("only submitted invoiceRepo can be approved")
 	ErrInvalidApprover     = errors.New("approver is required")
-	ErrInvoiceNotApproved  = errors.New("only approved invoice can be paid")
-	ErrInvoiceAlreadyPaid  = errors.New("invoice already paid")
+	ErrInvoiceNotApproved  = errors.New("only approved invoiceRepo can be paid")
+	ErrInvoiceAlreadyPaid  = errors.New("invoiceRepo already paid")
 	ErrInvalidPayment      = errors.New("invalid payment data")
 )
 

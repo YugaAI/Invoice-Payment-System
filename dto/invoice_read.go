@@ -5,7 +5,7 @@ import "time"
 type InvoiceDetail struct {
 	ID        uint64 `json:"id"`
 	CompanyID uint64 `json:"company_id"`
-	Company   string `json:"company"`
+	Company   string `json:"companyUsecase"`
 
 	Status string `json:"status"`
 

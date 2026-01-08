@@ -58,6 +58,7 @@ func InitWriteDB() *gorm.DB {
 		&model2.Invoices{},
 		&model2.Company{},
 		&model2.Item{},
+		&model2.User{},
 	); err != nil {
 		log.Fatal("failed to auto migrate:", err)
 	}

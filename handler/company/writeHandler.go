@@ -15,7 +15,7 @@ func (h *CompanyHandler) Create(c *gin.Context) {
 		return
 	}
 
-	company, err := h.CreateCmd.Execute(req.Name)
+	company, err := h.WriteUC.CreateExecute(req.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
