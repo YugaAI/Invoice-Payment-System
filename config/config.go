@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"aidanwoods.dev/go-paseto"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -88,4 +89,24 @@ func InitReadDB() *gorm.DB {
 
 	log.Println("READ database ready")
 	return db
+}
+
+type Config struct {
+	PasetoKey paseto.V4SymmetricKey
+}
+
+func LoadPaseto() *Config {
+	hexKey := os.Getenv("PASETO_SECRET")
+	if hexKey == "" {
+		panic("PASETO_SECRET required")
+	}
+
+	key, err := paseto.V4SymmetricKeyFromHex(hexKey)
+	if err != nil {
+		panic("invalid paseto key: " + err.Error())
+	}
+
+	return &Config{
+		PasetoKey: key,
+	}
 }

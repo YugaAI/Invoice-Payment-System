@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"invoice-payment-system/auth"
 	"invoice-payment-system/config"
 	"invoice-payment-system/handler/company"
 	"invoice-payment-system/handler/invoice"
@@ -30,6 +31,9 @@ func main() {
 	redisClient := redis_client.NewRedisClient(*redisCfg)
 	ctx := context.Background()
 
+	pasetoCfg := config.LoadPaseto()
+	pasetoSvc := auth.NewPasetoService(pasetoCfg.PasetoKey)
+
 	r := gin.Default()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -52,7 +56,7 @@ func main() {
 	userWriteRepo := user_write.NewSignIn(writeDB)
 	userReadUC := user_read_usecase.NewLoginUsecase(userReadRepo)
 	userWriteUC := user_write_usecase.NewWriteUsecase(writeDB, userWriteRepo)
-	userHandler := user.NewUserHandler(r, userReadUC, userWriteUC)
+	userHandler := user.NewUserHandler(r, userReadUC, userWriteUC, pasetoSvc)
 	userHandler.RegisterUserRoutes()
 
 	r.Run(":8080")

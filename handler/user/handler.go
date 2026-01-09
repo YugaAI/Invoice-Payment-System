@@ -1,6 +1,7 @@
 package user
 
 import (
+	"invoice-payment-system/auth"
 	"invoice-payment-system/model"
 
 	"github.com/gin-gonic/gin"
@@ -18,13 +19,15 @@ type Handler struct {
 	*gin.Engine
 	userReadUC  UserReadUsecase
 	userWriteUC UserWriteUsecase
+	pasetoSvc   *auth.PasetoService
 }
 
-func NewUserHandler(api *gin.Engine, readUC UserReadUsecase, writeUC UserWriteUsecase) *Handler {
+func NewUserHandler(api *gin.Engine, readUC UserReadUsecase, writeUC UserWriteUsecase, pasetoSvc *auth.PasetoService) *Handler {
 	return &Handler{
 		Engine:      api,
 		userReadUC:  readUC,
 		userWriteUC: writeUC,
+		pasetoSvc:   pasetoSvc,
 	}
 }
 
