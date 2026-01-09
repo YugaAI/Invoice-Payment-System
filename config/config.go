@@ -91,6 +91,7 @@ func InitReadDB() *gorm.DB {
 	return db
 }
 
+// LOCAL
 type Config struct {
 	PasetoKey paseto.V4SymmetricKey
 }
@@ -108,5 +109,35 @@ func LoadPaseto() *Config {
 
 	return &Config{
 		PasetoKey: key,
+	}
+}
+
+// PUBLIC
+type ConfigPublic struct {
+	PublicKey  paseto.V4AsymmetricPublicKey
+	PrivateKey paseto.V4AsymmetricSecretKey
+}
+
+func LoadPasetoPublic() *ConfigPublic {
+	privKey := os.Getenv("PRIVATE_KEY_HEX")
+	pubKey := os.Getenv("PUBLIC_KEY_HEX")
+
+	if privKey == "" || pubKey == "" {
+		panic("PRIVATE_KEY_HEX or PUBLIC_KEY_HEX required")
+	}
+
+	secretKey, err := paseto.NewV4AsymmetricSecretKeyFromHex(privKey)
+	if err != nil {
+		panic("invalid secret key: " + err.Error())
+	}
+
+	pubBytes, errPub := paseto.NewV4AsymmetricPublicKeyFromHex(pubKey)
+	if errPub != nil {
+		panic("invalid public key: " + errPub.Error())
+	}
+
+	return &ConfigPublic{
+		PublicKey:  pubBytes,
+		PrivateKey: secretKey,
 	}
 }

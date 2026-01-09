@@ -19,10 +19,11 @@ type Handler struct {
 	*gin.Engine
 	userReadUC  UserReadUsecase
 	userWriteUC UserWriteUsecase
-	pasetoSvc   *auth.PasetoService
+	//pasetoSvc   *auth.PasetoService
+	pasetoSvc *auth.PasetoPublicService
 }
 
-func NewUserHandler(api *gin.Engine, readUC UserReadUsecase, writeUC UserWriteUsecase, pasetoSvc *auth.PasetoService) *Handler {
+func NewUserHandler(api *gin.Engine, readUC UserReadUsecase, writeUC UserWriteUsecase, pasetoSvc *auth.PasetoPublicService) *Handler {
 	return &Handler{
 		Engine:      api,
 		userReadUC:  readUC,

@@ -31,9 +31,13 @@ func main() {
 	redisClient := redis_client.NewRedisClient(*redisCfg)
 	ctx := context.Background()
 
-	pasetoCfg := config.LoadPaseto()
-	pasetoSvc := auth.NewPasetoService(pasetoCfg.PasetoKey)
+	//local
+	//pasetoCfg := config.LoadPaseto()
+	//pasetoSvc := auth.NewPasetoService(pasetoCfg.PasetoKey)
 
+	//public
+	pasetoCfgPublic := config.LoadPasetoPublic()
+	pasetoSvcPublic := auth.NewPasetoPublicService(pasetoCfgPublic.PublicKey, pasetoCfgPublic.PrivateKey)
 	r := gin.Default()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -56,7 +60,10 @@ func main() {
 	userWriteRepo := user_write.NewSignIn(writeDB)
 	userReadUC := user_read_usecase.NewLoginUsecase(userReadRepo)
 	userWriteUC := user_write_usecase.NewWriteUsecase(writeDB, userWriteRepo)
-	userHandler := user.NewUserHandler(r, userReadUC, userWriteUC, pasetoSvc)
+	//local
+	//userHandler := user.NewUserHandler(r, userReadUC, userWriteUC, pasetoSvc)
+	//public
+	userHandler := user.NewUserHandler(r, userReadUC, userWriteUC, pasetoSvcPublic)
 	userHandler.RegisterUserRoutes()
 
 	r.Run(":8080")
